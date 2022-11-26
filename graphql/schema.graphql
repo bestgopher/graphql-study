@@ -1,0 +1,117 @@
+type Photo {
+    id: ID!
+    name: String!
+    url: String!
+    description: String!
+    created: DateTime
+    category: PhotoCategory!
+    postedBy: User!
+    taggedUsers: [User!]!
+}
+
+scalar DateTime
+
+enum PhotoCategory {
+    SELFIE
+    PORTRAIT
+    ACTION
+    LANDSCAPE
+    GRAPHIC
+}
+
+"""
+A user who has been authenticated by Github at least once
+"""
+type User {
+    """
+    The user's unique Github login
+    """
+    githubLogin: ID!
+    ""
+    name: String,
+    avatar: String
+    postedPhotos: [Photo!]!
+    inPhotos: [Photo!]!
+    friends: [Friendship!]!
+}
+
+type Query {
+    totalPhotos: Int!
+    allPhotos(category: PhotoCategory): [Photo!]!
+    totalUsers: Int!
+    allUsers: [User!]!
+    agenda: [AgendaItem!]!
+    agenda1: [AgendaItemInterface!]!
+    User(githubLogin:ID!): User!
+    Photo(id: ID!): Photo!
+    allUsers(first:Int=50, start: Int=0):[User!]!
+    allPhotos(first: Int=25, start: Int=0):[Photo!]!
+}
+
+type Friendship {
+    friend_a: User!
+    friend_b: User!
+    howLong: Int!
+    whereWeMet: Location
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
+
+union AgendaItem = StudyGroup | Workout
+
+type StudyGroup {
+    name: String!
+    subject: String
+    students: [User!]!
+}
+
+type Workout {
+    name: String!
+    reps: Int!
+}
+
+interface AgendaItemInterface {
+    name: String!
+    start: DateTime!
+    end: DateTime!
+}
+
+type StudyGroup implements AgendaItemInterface {
+    name: String!
+    start: DateTime!
+    end: DateTime!
+    participants: [User!]!
+    topic: String!
+}
+
+type Workout implements AgendaItemInterface {
+    name: String!
+    start: DateTime!
+    end: DateTime!
+    reps: Int!
+}
+
+type Mutation {
+    postPhoto(input: PostPhotoInput!): Photo!
+    githubAuth(code: String!): AuthPayload!
+}
+
+input PostPhotoInput {
+    name: String!
+    description: String
+    category: PhotoCategory=PORTRAIT
+}
+
+type AuthPayload {
+    user: User!
+    token: String!
+}
+
+type Subscription {
+    newPhoto(category: PhotoCategory): Photo!
+    newUser: User!
+}
