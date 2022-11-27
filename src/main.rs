@@ -30,7 +30,7 @@ const CLIENT_SECRETS: &str = "da4a28f91e1b4025c7344a8ce6ea72c5109ce12f";
 async fn graphiql() -> impl IntoResponse {
     response::Html(
         GraphiQLSource::build()
-            .endpoint("http://localhost:8000")
+            .endpoint("http://localhost:8000/graphql")
             .subscription_endpoint("ws://localhost:8000/ws")
             .finish(),
     )
@@ -54,10 +54,10 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/ws", GraphQLSubscription::new(schema.clone()))
-        .route("/", get(graphiql).post(graphql_handler))
+        .route("/graphql", get(graphiql).post(graphql_handler))
         .layer(Extension(schema));
 
-    println!("GraphiQL IDE: http://localhost:8000");
+    println!("GraphiQL IDE: http://localhost:8000/graphql");
 
     Server::bind(&"127.0.0.1:8000".parse()?)
         .serve(app.into_make_service())
